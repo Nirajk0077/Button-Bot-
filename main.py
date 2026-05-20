@@ -35,7 +35,7 @@ async def start_command(client: Client, message: Message):
     welcome_text = "Welcome to the Premium Button Bot!\nThis bot supports URL and inline buttons."
     
     # Send a welcome photo with spoiler
-    image_url = os.environ.get("WELCOME_IMAGE_URL", "https://via.placeholder.com/600x400.png?text=Premium+Button+Bot")
+    image_url = os.environ.get("WELCOME_IMAGE_URL", "https://i.ibb.co/twqrWB97/photo-2026-05-20-21-48-32-7642094223839199252.jpg")
     await message.reply_photo(
         photo=image_url, 
         caption=welcome_text, 
