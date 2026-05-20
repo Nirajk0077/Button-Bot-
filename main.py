@@ -43,6 +43,44 @@ async def start_command(client: Client, message: Message):
         has_spoiler=True
     )
 
+@app.on_message(filters.command("makebtn"))
+async def makebtn_command(client: Client, message: Message):
+    if len(message.command) < 2:
+        await message.reply(
+            "Please provide buttons separated by comma, in the format: `Name|URL, Name2|URL2`.\n"
+            "Example: `/makebtn My Google|https://google.com, Bing Search|https://bing.com`\n\n"
+            "**Note about colors:** Telegram does not allow changing the color of inline buttons. "
+            "The color depends on the user's app theme."
+        )
+        return
+
+    args = message.text.split(" ", 1)[1]
+    # Split by comma to allow spaces in names
+    button_pairs = args.split(",")
+
+    keyboard_buttons = []
+    for pair in button_pairs:
+        pair = pair.strip()
+        if "|" in pair:
+            name, url = pair.split("|", 1)
+            name = name.strip()
+            url = url.strip()
+            if not url.startswith("http://") and not url.startswith("https://"):
+                url = "https://" + url
+            keyboard_buttons.append([InlineKeyboardButton(name, url=url)])
+
+    if not keyboard_buttons:
+        await message.reply("No valid buttons found. Use format: `Name|URL` separated by comma (e.g. `Google|https://google.com, Bing Search|https://bing.com`)")
+        return
+
+    reply_markup = InlineKeyboardMarkup(keyboard_buttons)
+    await message.reply(
+        "Here are your custom buttons!\n\n"
+        "**Note about colors:** Telegram does not allow changing the color of inline buttons. "
+        "The color depends on the user's app theme.",
+        reply_markup=reply_markup
+    )
+
 @app.on_callback_query()
 async def callback_handler(client: Client, query):
     global auto_mode
