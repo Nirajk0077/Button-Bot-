@@ -1,4 +1,6 @@
 import os
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 
@@ -56,7 +58,7 @@ async def callback_handler(client: Client, query):
                 [InlineKeyboardButton("Back", callback_data="back")]
             ]
         )
-        await query.edit_message_text("Settings:", reply_markup=setting_keyboard)
+        await query.edit_message_caption("Settings:", reply_markup=setting_keyboard)
     elif data == "toggle_mode":
         auto_mode = not auto_mode
         mode_text = "Auto" if auto_mode else "Manual"
@@ -66,7 +68,7 @@ async def callback_handler(client: Client, query):
                 [InlineKeyboardButton("Back", callback_data="back")]
             ]
         )
-        await query.edit_message_text("Settings:", reply_markup=setting_keyboard)
+        await query.edit_message_caption("Settings:", reply_markup=setting_keyboard)
     elif data == "help":
         await query.answer("Help menu coming soon!", show_alert=True)
     elif data == "cmd":
@@ -77,7 +79,7 @@ async def callback_handler(client: Client, query):
                 [InlineKeyboardButton("Back", callback_data="back")]
             ]
         )
-        await query.edit_message_text("Available Commands:", reply_markup=cmd_keyboard)
+        await query.edit_message_caption("Available Commands:", reply_markup=cmd_keyboard)
     elif data == "back":
         keyboard = InlineKeyboardMarkup(
             [
@@ -95,10 +97,26 @@ async def callback_handler(client: Client, query):
                 ]
             ]
         )
-        await query.edit_message_text("Welcome to the Premium Button Bot!\nThis bot supports URL and inline buttons.", reply_markup=keyboard)
+        await query.edit_message_caption("Welcome to the Premium Button Bot!\nThis bot supports URL and inline buttons.", reply_markup=keyboard)
     else:
         await query.answer("Unknown command.", show_alert=True)
 
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Bot is healthy and running!')
+
+def run_server():
+    port = int(os.environ.get("PORT", 8080))
+    server_address = ('', port)
+    httpd = HTTPServer(server_address, HealthCheckHandler)
+    print(f"Health check server running on port {port}...")
+    httpd.serve_forever()
+
 if __name__ == "__main__":
+    # Start the web server in a background thread
+    threading.Thread(target=run_server, daemon=True).start()
     print("Bot started...")
     app.run()
